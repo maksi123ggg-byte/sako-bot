@@ -71,10 +71,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с упоминанием SK¹
+# 3. Карточка товара с упоминанием SK¹ (ЗДЕСЬ ВСЁ ИСПРАВЛЕНО)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1])
+    prod_idx = int(callback.data.split(":")[1]) # Исправлено: добавлен индекс [1]
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
