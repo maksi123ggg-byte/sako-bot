@@ -12,10 +12,10 @@ TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
 ADMIN_ID = 8341066688
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"
 
-FUNPAY_URL = "https://funpay.com"
-PAYGAME_URL = "https://paygame.ru"
-REVIEWS_URL = "https://funpay.com"
-SUPPORT_URL = "https://t.me"
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
+PAYGAME_URL = "https://paygame.ru/users/SAKO1"
+REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
+SUPPORT_URL = "https://t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
