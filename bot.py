@@ -10,7 +10,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- КОНФИГУРАЦИЯ БОТА И АДМИНКИ ---
-TOKEN = "8586142798:AAGxUeK-EwV_t6FwQp5b-A_yIqXN2wKzD8s"  # Ваш рабочий токен от @BotFather
+TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"  # Ваш рабочий токен от @BotFather
 ADMIN_ID = 8341066688  # Ваш Telegram ID
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"  # Ваш токен FunPay
 
