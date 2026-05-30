@@ -14,7 +14,7 @@ TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 # Ваши личные профили и контакты
 FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/users/19612186/
+REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
 SUPPORT_URL = "t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
