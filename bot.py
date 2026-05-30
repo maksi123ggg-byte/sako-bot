@@ -12,10 +12,10 @@ TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
 ADMIN_ID = 8341066688
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"
 
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
-PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
-SUPPORT_URL = "https://t.me/SK_SAKO"
+FUNPAY_URL = "https://funpay.com"
+PAYGAME_URL = "https://paygame.ru"
+REVIEWS_URL = "https://funpay.com"
+SUPPORT_URL = "https://t.me"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -48,13 +48,19 @@ def run_dummy_server():
     httpd.serve_forever()
 
 def get_free_proxies():
-    try:
-        response = requests.get("https://proxyscrape.com", timeout=5)
-        if response.status_code == 200:
-            return response.text.strip().split("\r\n")
-    except:
-        pass
-    return []
+    urls = [
+        "https://githubusercontent.com",
+        "https://proxyscrape.com"
+    ]
+    proxies = []
+    for url in urls:
+        try:
+            response = requests.get(url, timeout=4)
+            if response.status_code == 200:
+                proxies.extend(response.text.strip().split("\n"))
+        except:
+            continue
+    return [p.strip() for p in proxies if p.strip()]
 
 def raise_funpay_lots():
     url = "https://funpay.com"
@@ -70,35 +76,36 @@ def raise_funpay_lots():
     data = {"game_id": ""} 
     
     try:
-        response = requests.post(url, headers=headers, data=data, timeout=8)
+        response = requests.post(url, headers=headers, data=data, timeout=5)
         if response.status_code == 200:
-            try:
-                json_data = response.json()
-                if "error" in json_data:
-                    return False, f"Ошибка сайта: {json_data.get('message', 'Ограничение времени поднятия')}"
-            except:
-                pass
-            return True, "Лоты успешно обработаны напрямую"
+            return True, "Лоты успешно обработаны напрямую без ограничений"
     except:
         pass
 
     proxy_list = get_free_proxies()
-    for proxy in proxy_list[:15]:
+    checked = 0
+    for proxy in proxy_list:
+        if checked >= 25:
+            break
+        if not proxy or ":" not in proxy:
+            continue
+        
         proxies = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
         try:
-            response = requests.post(url, headers=headers, data=data, proxies=proxies, timeout=5)
+            checked += 1
+            response = requests.post(url, headers=headers, data=data, proxies=proxies, timeout=4)
             if response.status_code == 200:
                 try:
                     json_data = response.json()
                     if "error" in json_data:
-                        return False, f"Ошибка сайта: {json_data.get('message', 'Ограничение времени поднятия')}"
+                        return False, f"Запрос дошел, но сайт вернул кулдаун: {json_data.get('message')}"
                 except:
                     pass
-                return True, f"Лоты успешно обработаны через прокси {proxy}"
+                return True, f"Лоты подняты через прокси [{proxy}]"
         except:
             continue
             
-    return False, "Не удалось подключиться к FunPay ни напрямую, ни через бесплатные прокси"
+    return False, "Все прокси заблокированы Cloudflare. Требуется обновление пула адресов."
 
 async def funpay_loop():
     global AUTORAISE_ENABLED
@@ -110,13 +117,13 @@ async def funpay_loop():
             success, info = await loop.run_in_executor(None, raise_funpay_lots)
             try:
                 if success:
-                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Лоты успешно подняты автоматически! 🔄\nИнфо: {info}")
+                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Автоподнятие выполнено успешно! 🔄\nИнфо: {info}")
                     await asyncio.sleep(7200)
                 else:
-                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nИнфо: {info}")
-                    await asyncio.sleep(600)
+                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Временный сбой сети ❌\nИнфо: {info}\nСледующая попытка через 1 час.")
+                    await asyncio.sleep(3600)
             except Exception as tg_err:
-                print(f"Не удалось отправить уведомление админу: {tg_err}")
+                print(f"Ошибка отправки сообщения: {tg_err}")
                 await asyncio.sleep(60)
         else:
             await asyncio.sleep(10)
@@ -161,7 +168,7 @@ async def show_products(callback: CallbackQuery):
 
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1])
+    prod_idx = int(callback.data.split(":"))
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -258,4 +265,3 @@ async def main():
 if __name__ == "__main__":
     threading.Thread(target=run_dummy_server, daemon=True).start()
     asyncio.run(main())
-    
