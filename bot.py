@@ -9,7 +9,7 @@ from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # Токен из вашего скриншота и ваш Telegram ID
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
+TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
 ADMIN_ID = 8341066688
 
 # Ваша ссылка на профиль FunPay оформлена верно
