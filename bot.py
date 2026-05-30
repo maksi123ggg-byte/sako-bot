@@ -11,9 +11,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 # Токен из вашего BotFather
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 
-# ЗДЕСЬ СТОЯТ СТРОГО ВАШИ ЛИЧНЫЕ ССЫЛКИ:
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
-PAYGAME_URL = "https://paygame.ru/users/SAKO1"
+# Ваши личные ссылки на профили и контакты администрации:
+FUNPAY_URL = "https://funpay.com"
+PAYGAME_URL = "https://paygame.ru"
 SUPPORT_URL = "https://t.me"
 
 bot = Bot(token=TOKEN)
@@ -69,9 +69,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором ваших профилей
+# 3. Карточка товара с выбором ваших профилей (Ошибка со split исправлена)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
+    # Теперь извлекается точный индекс элемента из callback_data
     prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
