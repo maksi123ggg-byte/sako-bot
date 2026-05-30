@@ -10,7 +10,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # Токен из вашего BotFather и ваши личные ссылки
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
 REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
 SUPPORT_URL = "t.me/SK_SAKO
