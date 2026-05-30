@@ -8,11 +8,11 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
+TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
 
-FUNPAY_URL = "https://funpay.com"
-PAYGAME_URL = "https://paygame.ru"
-SUPPORT_URL = "https://t.me"
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
+PAYGAME_URL = "https://paygame.ru/users/SAKO1"
+SUPPORT_URL = "t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
