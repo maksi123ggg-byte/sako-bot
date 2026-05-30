@@ -11,7 +11,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 # ВАШ ТОКЕН ИЗ BOTFATHER (Убедитесь, что он рабочий и скопирован без ошибок!)
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 
-# ТЕПЕРЬ ЗДЕСЬ СТОЯТ ИМЕННО ВАШИ ЛИЧНЫЕ ПРОФИЛИ:
+# ВАШИ ЛИЧНЫЕ ПРОФИЛИ:
 FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
 REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
@@ -58,7 +58,6 @@ async def start(message: Message):
 async def show_products(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
     for idx, (product, price) in enumerate(products.items()):
-        # Исправлено: передаем индекс как часть строки callback_data
         kb.button(text=f"{product} — {price}", callback_data=f"prod:{idx}")
         
     kb.button(text="⬅️ Назад в меню", callback_data="back_to_menu")
@@ -72,10 +71,9 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором сайтов (Исправлен split)
+# 3. Карточка товара с выбором сайтов
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    # Исправлено: берем элемент по индексу [1] после разделения строки
     prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
@@ -96,7 +94,6 @@ async def select_platform(callback: CallbackQuery):
     await callback.answer()
 
 # 4. Возврат в главное меню
-@dp.callback_menu = None
 @dp.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
