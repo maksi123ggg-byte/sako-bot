@@ -13,7 +13,7 @@ TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
 ADMIN_ID = 8341066688
 
 # Ваша ссылка на профиль FunPay оформлена верно
-FUNPAY_URL = "https://funpay.com"
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
