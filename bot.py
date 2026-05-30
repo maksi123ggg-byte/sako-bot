@@ -168,7 +168,12 @@ async def show_products(callback: CallbackQuery):
 
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":"))
+    data_parts = callback.data.split(":")
+    if len(data_parts) < 2:
+        await callback.answer("Ошибка данных товара", show_alert=True)
+        return
+        
+    prod_idx = int(data_parts[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -256,12 +261,13 @@ async def fp_now(callback: CallbackQuery):
     if success:
         await callback.message.answer(f"[FunPay] Результат выполнения ⚡✅\n{info}")
     else:
-        await callback.message.answer(f"[FunPay] Результат выполнения ❌\n{info}")
+        await callback.message.answer(f"[FunPay]
+        Результат выполнения ❌\n{info}")
 
 async def main():
     asyncio.create_task(funpay_loop())
     await dp.start_polling(bot)
 
-if __name__ == "__main__":
-    threading.Thread(target=run_dummy_server, daemon=True).start()
+if name == "main":
+    threading.Thread(target=run_dummy_server,daemon=True).start()
     asyncio.run(main())
