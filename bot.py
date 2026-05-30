@@ -8,14 +8,14 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# СЮДА ВСТАВЬТЕ ВАШ СВЕЖИЙ ТОКЕН ИЗ BOTFATHER (СКОПИРУЙТЕ ЗАНОВО!)
+# ВАШ ТОКЕН ИЗ BOTFATHER (Убедитесь, что он рабочий и скопирован без ошибок!)
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 
-# ВАШИ РЕАЛЬНЫЕ ССЫЛКИ ИЗ ЗАПРОСА:
+# ТЕПЕРЬ ЗДЕСЬ СТОЯТ ИМЕННО ВАШИ ЛИЧНЫЕ ПРОФИЛИ:
 FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
 REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
-SUPPORT_URL = "https://t.me"
+SUPPORT_URL = "t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -43,7 +43,7 @@ async def start(message: Message):
     await message.answer(
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
         "Мы — профессиональная команда клана **SK¹**. Предоставляем топовые услуги качественного сопровождения и буста в PUBG Mobile.\n\n"
-        "🔒 **Why choose clan SK¹:**\n"
+        "🔒 **Почему выбирают клан SK¹:**\n"
         "• Профессиональные бойцы нашего клана\n"
         "• Быстрое выполнение и гарантия окупаемости\n"
         "• Полная безопасность вашего игрового аккаунта\n"
@@ -58,6 +58,7 @@ async def start(message: Message):
 async def show_products(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
     for idx, (product, price) in enumerate(products.items()):
+        # Исправлено: передаем индекс как часть строки callback_data
         kb.button(text=f"{product} — {price}", callback_data=f"prod:{idx}")
         
     kb.button(text="⬅️ Назад в меню", callback_data="back_to_menu")
@@ -71,9 +72,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором сайтов
+# 3. Карточка товара с выбором сайтов (Исправлен split)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
+    # Исправлено: берем элемент по индексу [1] после разделения строки
     prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
@@ -94,6 +96,7 @@ async def select_platform(callback: CallbackQuery):
     await callback.answer()
 
 # 4. Возврат в главное меню
+@dp.callback_menu = None
 @dp.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
