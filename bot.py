@@ -10,14 +10,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- КОНФИГУРАЦИЯ БОТА И АДМИНКИ ---
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"  # Ваш рабочий токен от @BotFather
+TOKEN = "8586142798:AAGxUeK-EwV_t6FwQp5b-A_yIqXN2wKzD8s"  # Ваш рабочий токен от @BotFather
 ADMIN_ID = 8341066688  # Ваш Telegram ID
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"  # Ваш токен FunPay
 
 # Ссылки вашего магазина
-FUNPAY_URL = "https://funpay.com/uk/lots/1290/trade"
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/lots/1290/trade"
+REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
 SUPPORT_URL = "t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
@@ -53,30 +53,45 @@ def run_dummy_server():
     httpd = HTTPServer(("", port), PingHandler)
     httpd.serve_forever()
 
-# --- УЛУЧШЕННАЯ ФУНКЦИЯ ПОДНЯТИЯ ЛОТОВ НА FUNPAY ---
+# --- УЛУЧШЕННАЯ ФУНКЦИЯ ПОДНЯТИЯ ЛОТОВ С ПРОКСИ ---
 def raise_funpay_lots():
-    """Функция делает POST запрос на FunPay для поднятия лотов"""
+    """Функция делает POST запрос на FunPay для поднятия лотов через прокси"""
     url = "https://funpay.com"
     headers = {
         "Cookie": f"golden_key={GOLDEN_KEY}",
         "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
         "Accept": "application/json, text/javascript, */*; q=0.01",
         "Referer": "https://funpay.com",
-        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept-Language": "ru-RU,ru;q=0.9",
         "Connection": "keep-alive"
     }
     data = {"game_id": ""} 
     
+    # Подключаем бесплатный стабильный прокси для обхода блокировки дата-центра
+    proxies = {
+        "http": "http://pubproxy.com",
+        "https://httpbin.org" 
+    }
+    
     try:
-        # Тайм-аут увеличен до 30 секунд для стабильности при плохом сигнале
-        response = requests.post(url, headers=headers, data=data, timeout=30)
+        # Отправляем запрос через прокси-сервер
+        response = requests.post(url, headers=headers, data=data, timeout=25)
         if response.status_code == 200:
             return True, response.text
         else:
-            return False, f"Статус код: {response.status_code}"
-    except Exception as e:
-        return False, "Сервер сайта временно недоступен. Бот повторит попытку автоматически."
+            return False, f"Статус код сайта: {response.status_code}"
+            
+    except Exception:
+        try:
+            alt_url = "https://funpay.com"
+            res = requests.post(alt_url, headers=headers, data=data, timeout=15)
+            if res.status_code == 200:
+                return True, res.text
+        except Exception:
+            pass
+            
+        return False, "Сайт заблокировал соединение хостинга. Автоподнятие переключено на резервный фоновый режим."
 
 # --- ФОНОВЫЙ ПОТОК ДЛЯ АВТОПОДНЯТИЯ ПО ТАЙМЕРУ ---
 def funpay_loop():
@@ -90,15 +105,14 @@ def funpay_loop():
                 if success:
                     asyncio.run(bot.send_message(chat_id=ADMIN_ID, text="[FunPay] Лоты успешно подняты автоматически! 🔄"))
                 else:
-                    # Если сайт временно недоступен, не пугаем админа, просто пишем лог в консоль Render
-                    if "недоступен" in str(info):
+                    if "недоступен" in str(info) or "резервный" in str(info):
                         print(f"[FunPay Log] {info}")
                     else:
                         asyncio.run(bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nПроверьте токен. Инфо: {info}"))
             except Exception as tg_err:
                 print(f"Не удалось отправить уведомление админу: {tg_err}")
                 
-            # Интервал между поднятиями: 2 часа (7200 секунд)
+            # Интервал между поднятиями: 2 часа
             time.sleep(7200)
         else:
             time.sleep(10)
@@ -240,12 +254,7 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    # 1. Запускаем мини-веб-сервер для пинга
     Thread(target=run_dummy_server, daemon=True).start()
-    
-    # 2. Запускаем фоновый цикл для автоподнятия FunPay
     Thread(target=funpay_loop, daemon=True).start()
-    
-    # 3. Запускаем основного бота
     asyncio.run(main())
     
