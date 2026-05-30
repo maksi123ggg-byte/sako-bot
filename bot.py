@@ -1,32 +1,27 @@
 import os
 import asyncio
-import time
-from threading import Thread
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import requests
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# --- КОНФИГУРАЦИЯ БОТА И АДМИНКИ ---
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"  # Ваш рабочий токен от @BotFather
-ADMIN_ID = 8341066688  # Ваш Telegram ID
-GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"  # Ваш токен FunPay
+TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
+ADMIN_ID = 8341066688
+GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"
 
-# ВСТАВЬТЕ СЮДА ВАШИ РЕАЛЬНЫЕ ССЫЛКИ ДЛЯ ОПЛАТЫ КЛИЕНТАМИ:
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
-PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
-SUPPORT_URL = "t.me/SK_SAKO"
+FUNPAY_URL = "https://funpay.com"
+PAYGAME_URL = "https://paygame.ru"
+REVIEWS_URL = "https://funpay.com"
+SUPPORT_URL = "https://t.me"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Переменная для хранения статуса автоподнятия (по умолчанию включено)
 AUTORAISE_ENABLED = True
 
-# Список товаров клана SK¹
 products = {
     "7-Я|СОПРОВОД|ГАРАНТ 20КК+ШМОТ": "230 ₽",
     "7-Я|СОПРОВОД|ГАРАНТ 10КК+ШМОТ": "150 ₽",
@@ -37,7 +32,6 @@ products = {
     "7-Я|БУСТ|50КК-БЕЗ ШМОТА": "400 ₽"
 }
 
-# --- КЛАСС ОБРАБОТЧИКА ДЛЯ ПИНГА RENDER ---
 class PingHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -53,9 +47,7 @@ def run_dummy_server():
     httpd = HTTPServer(("", port), PingHandler)
     httpd.serve_forever()
 
-# --- ФУНКЦИЯ ПОДНЯТИЯ ЛОТОВ С ОБХОДОМ БЛОКИРОВКИ ---
 def raise_funpay_lots():
-    """Функция делает POST запрос на FunPay для поднятия лотов"""
     url = "https://funpay.com"
     headers = {
         "Cookie": f"golden_key={GOLDEN_KEY}",
@@ -69,35 +61,40 @@ def raise_funpay_lots():
     data = {"game_id": ""} 
     
     try:
-        response = requests.post(url, headers=headers, data=data, timeout=30)
+        response = requests.post(url, headers=headers, data=data, timeout=10)
         if response.status_code == 200:
+            try:
+                json_data = response.json()
+                if "error" in json_data:
+                    return False, f"Ошибка сайта: {json_data.get('message', 'Ограничение времени поднятия')}"
+            except:
+                pass
             return True, "Лоты успешно обработаны на сайте"
         else:
             return False, f"Статус код сайта: {response.status_code}"
-    except Exception:
-        return True, "Запрос отправлен в режиме обхода дата-центра"
+    except Exception as e:
+        return False, f"Ошибка соединения: {str(e)}"
 
-# --- ФОНОВЫЙ ПОТОК ДЛЯ АВТОПОДНЯТИЯ ПО ТАЙМЕРУ ---
-def funpay_loop():
+async def funpay_loop():
     global AUTORAISE_ENABLED
-    time.sleep(15)
+    await asyncio.sleep(15)
     
     while True:
         if AUTORAISE_ENABLED:
-            success, info = raise_funpay_lots()
+            loop = asyncio.get_event_loop()
+            success, info = await loop.run_in_executor(None, raise_funpay_lots)
             try:
                 if success:
-                    asyncio.run(bot.send_message(chat_id=ADMIN_ID, text="[FunPay] Лоты успешно подняты автоматически! 🔄"))
+                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Лоты успешно подняты автоматически! 🔄\nИнфо: {info}")
+                    await asyncio.sleep(7200)
                 else:
-                    asyncio.run(bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nПроверьте токен. Инфо: {info}"))
+                    await bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nИнфо: {info}")
+                    await asyncio.sleep(600)
             except Exception as tg_err:
                 print(f"Не удалось отправить уведомление админу: {tg_err}")
-                
-            time.sleep(7200)
+                await asyncio.sleep(60)
         else:
-            time.sleep(10)
-
-# --- ЛОГИКА ТЕЛЕГРАМ-БОТА (МАГАЗИН PUBG) ---
+            await asyncio.sleep(10)
 
 @dp.message(CommandStart())
 async def start(message: Message):
@@ -137,10 +134,9 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТКРЫТИЯ ССЫЛОК НА ТОВАРЫ
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1]) # ИСПРАВЛЕНО ЗДЕСЬ (добавлен индекс [1])
+    prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -151,8 +147,8 @@ async def select_platform(callback: CallbackQuery):
     kb.adjust(1)
     
     await callback.message.edit_text(
-        f"🛒 Вы выбрали услугу от клана SK¹:\n{product_name}\n\n"
-        f"💰 Цена услуги: {product_price}\n\n"
+        f"🛒 Вы выбрали услугу от клана SK¹:\n• **{product_name}**\n\n"
+        f"💰 Цена услуги: **{product_price}**\n\n"
         f"Выберите удобную для вас торговую площадку для безопасной покупки у нашего клана:",
         reply_markup=kb.as_markup(),
         parse_mode="Markdown"
@@ -173,8 +169,6 @@ async def back_to_menu(callback: CallbackQuery):
     )
     await callback.message.edit_text(message_text, reply_markup=kb.as_markup())
     await callback.answer()
-
-# --- СЕКРЕТНАЯ АДМИН-ПАНЕЛЬ ДЛЯ ВАС ---
 
 def get_admin_kb():
     kb = InlineKeyboardBuilder()
@@ -225,17 +219,18 @@ async def fp_now(callback: CallbackQuery):
     if callback.from_user.id != ADMIN_ID: return
     await callback.answer("Запрос отправлен...")
     
-    success, info = raise_funpay_lots()
+    loop = asyncio.get_event_loop()
+    success, info = await loop.run_in_executor(None, raise_funpay_lots)
     if success:
         await callback.message.answer(f"[FunPay] Результат выполнения ⚡✅\n{info}")
     else:
         await callback.message.answer(f"[FunPay] Результат выполнения ❌\n{info}")
 
 async def main():
+    asyncio.create_task(funpay_loop())
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    Thread(target=run_dummy_server, daemon=True).start()
-    Thread(target=funpay_loop, daemon=True).start()
+    threading.Thread(target=run_dummy_server, daemon=True).start()
     asyncio.run(main())
     
