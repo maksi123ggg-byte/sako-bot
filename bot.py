@@ -8,12 +8,13 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Токен из вашего BotFather и ваши личные ссылки
+# Токен из вашего BotFather
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
+
+# ЗДЕСЬ СТОЯТ СТРОГО ВАШИ ЛИЧНЫЕ ССЫЛКИ:
 FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
-SUPPORT_URL = "t.me/SK_SAKO
+SUPPORT_URL = "https://t.me"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -34,7 +35,6 @@ products = {
 async def start(message: Message):
     kb = InlineKeyboardBuilder()
     kb.button(text="🛒 Услуги клана SK¹", callback_data="view_products")
-    kb.button(text="⭐ Отзывы клиентов", url=REVIEWS_URL)
     kb.button(text="💬 Связаться с админом", url=SUPPORT_URL)
     kb.adjust(1)
     
@@ -69,10 +69,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором сайтов (Индекс [1] теперь добавлен!)
+# 3. Карточка товара с выбором ваших профилей
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1]) # Баг исправлен здесь
+    prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -96,7 +96,6 @@ async def select_platform(callback: CallbackQuery):
 async def back_to_menu(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
     kb.button(text="🛒 Услуги клана SK¹", callback_data="view_products")
-    kb.button(text="⭐ Отзывы клиентов", url=REVIEWS_URL)
     kb.button(text="💬 Связаться с админом", url=SUPPORT_URL)
     kb.adjust(1)
     
