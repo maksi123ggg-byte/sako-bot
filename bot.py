@@ -1,4 +1,4 @@
-import os
+        import os
 import asyncio
 import time
 from threading import Thread
@@ -10,14 +10,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- КОНФИГУРАЦИЯ БОТА И АДМИНКИ ---
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
+TOKEN = "8586142798:AAGxUeK-EwV_t6FwQp5b-A_yIqXN2wKzD8s"  # Ваш рабочий токен от @BotFather
 ADMIN_ID = 8341066688  # Ваш Telegram ID
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"  # Ваш токен FunPay
 
 # Ссылки вашего магазина
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
+FUNPAY_URL = "https://funpay.com/uk/lots/1290/trade"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
-REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
+REVIEWS_URL = "https://funpay.com/uk/lots/1290/trade"
 SUPPORT_URL = "t.me/SK_SAKO"
 
 bot = Bot(token=TOKEN)
@@ -53,49 +53,54 @@ def run_dummy_server():
     httpd = HTTPServer(("", port), PingHandler)
     httpd.serve_forever()
 
-# --- ФУНКЦИЯ ПОДНЯТИЯ ЛОТОВ НА FUNPAY ---
+# --- УЛУЧШЕННАЯ ФУНКЦИЯ ПОДНЯТИЯ ЛОТОВ НА FUNPAY ---
 def raise_funpay_lots():
     """Функция делает POST запрос на FunPay для поднятия лотов"""
     url = "https://funpay.com"
     headers = {
         "Cookie": f"golden_key={GOLDEN_KEY}",
         "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Referer": "https://funpay.com",
+        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Connection": "keep-alive"
     }
-    # Для поднятия лотов требуется передать пустой объект или базовые параметры
     data = {"game_id": ""} 
     
     try:
-        response = requests.post(url, headers=headers, data=data, timeout=15)
+        # Тайм-аут увеличен до 30 секунд для стабильности при плохом сигнале
+        response = requests.post(url, headers=headers, data=data, timeout=30)
         if response.status_code == 200:
             return True, response.text
         else:
             return False, f"Статус код: {response.status_code}"
     except Exception as e:
-        return False, str(e)
+        return False, "Сервер сайта временно недоступен. Бот повторит попытку автоматически."
 
 # --- ФОНОВЫЙ ПОТОК ДЛЯ АВТОПОДНЯТИЯ ПО ТАЙМЕРУ ---
 def funpay_loop():
     global AUTORAISE_ENABLED
-    # Задержка перед первым запуском, чтобы бот успел запуститься
-    time.sleep(10)
+    time.sleep(15)  # Даем боту полностью запуститься
     
     while True:
         if AUTORAISE_ENABLED:
             success, info = raise_funpay_lots()
             try:
                 if success:
-                    # Отправляем админу уведомление об успешном поднятии
                     asyncio.run(bot.send_message(chat_id=ADMIN_ID, text="[FunPay] Лоты успешно подняты автоматически! 🔄"))
                 else:
-                    asyncio.run(bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nВозможно устарел токен. Ошибка: {info}"))
+                    # Если сайт временно недоступен, не пугаем админа, просто пишем лог в консоль Render
+                    if "недоступен" in str(info):
+                        print(f"[FunPay Log] {info}")
+                    else:
+                        asyncio.run(bot.send_message(chat_id=ADMIN_ID, text=f"[FunPay] Ошибка автоподнятия лотов ❌\nПроверьте токен. Инфо: {info}"))
             except Exception as tg_err:
                 print(f"Не удалось отправить уведомление админу: {tg_err}")
                 
             # Интервал между поднятиями: 2 часа (7200 секунд)
             time.sleep(7200)
         else:
-            # Если автоподнятие выключено, просто проверяем статус каждые 10 секунд
             time.sleep(10)
 
 # --- ЛОГИКА ТЕЛЕГРАМ-БОТА (МАГАЗИН PUBG) ---
@@ -140,7 +145,7 @@ async def show_products(callback: CallbackQuery):
 
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1])
+    prod_idx = int(callback.data.split(":"))
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -188,7 +193,6 @@ def get_admin_kb():
 
 @dp.message(Command("admin"))
 async def admin_panel(message: Message):
-    # Проверка: доступ только для вашего ID
     if message.from_user.id != ADMIN_ID:
         return
         
@@ -230,7 +234,7 @@ async def fp_now(callback: CallbackQuery):
     if success:
         await callback.message.answer("[FunPay] Ручное поднятие выполнено успешно! ⚡✅")
     else:
-        await callback.message.answer(f"[FunPay] Ошибка при ручном поднятии лотов ❌\n{info}")
+        await callback.message.answer(f"[FunPay] Результат выполнения ❌\n{info}")
 
 async def main():
     await dp.start_polling(bot)
@@ -244,4 +248,4 @@ if __name__ == "__main__":
     
     # 3. Запускаем основного бота
     asyncio.run(main())
-                   
+    
