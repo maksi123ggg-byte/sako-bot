@@ -8,10 +8,8 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Токен из вашего BotFather
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 
-# Ваши личные ссылки на профили и контакты администрации:
 FUNPAY_URL = "https://funpay.com"
 PAYGAME_URL = "https://paygame.ru"
 SUPPORT_URL = "https://t.me"
@@ -19,7 +17,6 @@ SUPPORT_URL = "https://t.me"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Список товаров клана SK¹
 products = {
     "7-Я|СОПРОВОД|ГАРАНТ 20КК+ШМОТ": "230 ₽",
     "7-Я|СОПРОВОД|ГАРАНТ 10КК+ШМОТ": "150 ₽",
@@ -30,7 +27,6 @@ products = {
     "7-Я|БУСТ|50КК-БЕЗ ШМОТА": "400 ₽"
 }
 
-# 1. Главное меню бота (Клан SK¹)
 @dp.message(CommandStart())
 async def start(message: Message):
     kb = InlineKeyboardBuilder()
@@ -40,43 +36,35 @@ async def start(message: Message):
     
     await message.answer(
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
-        "Мы — профессиональная команда клана **SK¹**. Предоставляем топовые услуги качественного сопровождения и буста в PUBG Mobile.\n\n"
-        "🔒 **Почему выбирают клан SK¹:**\n"
-        "• Профессиональные бойцы нашего клана\n"
-        "• Быстрое выполнение и гарантия окупаемости\n"
-        "• Полная безопасность вашего игрового аккаунта\n"
-        "• Честные цены и сотни довольных клиентов\n\n"
-        "Выбирайте нужный раздел в меню ниже 👇",
+        "Мы — профессиональная команда клана **SK¹**. Предоставляем топовые услуги буста в PUBG Mobile.\n\n"
+        "🔒 **Наши гарантии:**\n"
+        "• Быстрое выполнение\n"
+        "• Полная безопасность аккаунта\n"
+        "• Честные цены\n\n"
+        "Выбирайте нужный раздел в меню नीचे 👇",
         reply_markup=kb.as_markup(),
         parse_mode="Markdown"
     )
 
-# 2. Окно со списком услуг клана SK¹
 @dp.callback_query(F.data == "view_products")
 async def show_products(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
-    for idx, (product, price) in enumerate(products.items()):
-        kb.button(text=f"{product} — {price}", callback_data=f"prod:{idx}")
+    for product, price in products.items():
+        kb.button(text=f"{product} — {price}", callback_data=f"buy_{price}")
         
     kb.button(text="⬅️ Назад в меню", callback_data="back_to_menu")
     kb.adjust(1)
     
     await callback.message.edit_text(
         "📱 **СПИСОК ДОСТУПНЫХ УСЛУГ КЛАНА SK¹**\n\n"
-        "Выберите интересующий вас вариант, чтобы открыть площадки для оплаты:",
+        "Выберите интересующий вас вариант:",
         reply_markup=kb.as_markup(),
         parse_mode="Markdown"
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором ваших профилей (Баг со split убран)
-@dp.callback_query(F.data.startswith("prod:"))
+@dp.callback_query(F.data.startswith("buy_"))
 async def select_platform(callback: CallbackQuery):
-    # Теперь берется точный индекс элемента после разделения строки двоеточием
-    prod_idx = int(callback.data.split(":")[1])
-    product_name = list(products.keys())[prod_idx]
-    product_price = list(products.values())[prod_idx]
-    
     kb = InlineKeyboardBuilder()
     kb.button(text="💳 Купить на FunPay", url=FUNPAY_URL)
     kb.button(text="💳 Купить на PayGame", url=PAYGAME_URL)
@@ -84,15 +72,13 @@ async def select_platform(callback: CallbackQuery):
     kb.adjust(1)
     
     await callback.message.edit_text(
-        f"🛒 **Вы выбрали услугу от клана SK¹:**\n`{product_name}`\n\n"
-        f"💰 **Цена услуги:** {product_price}\n\n"
-        f"Выберите удобную для вас торговую площадку для безопасной покупки у нашего клана:",
+        "🛒 **Вы выбрали услугу от клана SK¹!**\n\n"
+        "Выберите удобную торговую площадку для безопасной покупки:",
         reply_markup=kb.as_markup(),
         parse_mode="Markdown"
     )
     await callback.answer()
 
-# 4. Возврат в главное меню
 @dp.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery):
     kb = InlineKeyboardBuilder()
@@ -100,11 +86,11 @@ async def back_to_menu(callback: CallbackQuery):
     kb.button(text="💬 Связаться с админом", url=SUPPORT_URL)
     kb.adjust(1)
     
-    message_text = (
+    await callback.message.edit_text(
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
-        "Выбирайте нужный раздел в меню ниже 👇"
+        "Выбирайте нужный раздел ниже 👇",
+        reply_markup=kb.as_markup()
     )
-    await callback.message.edit_text(message_text, reply_markup=kb.as_markup())
     await callback.answer()
 
 async def main():
