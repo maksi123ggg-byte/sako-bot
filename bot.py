@@ -268,6 +268,6 @@ async def main():
     asyncio.create_task(funpay_loop())
     await dp.start_polling(bot)
 
-if name == "main":
+if __name__ == "__main__":
     threading.Thread(target=run_dummy_server, daemon=True).start()
     asyncio.run(main())
