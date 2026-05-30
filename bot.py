@@ -47,6 +47,15 @@ def run_dummy_server():
     httpd = HTTPServer(("", port), PingHandler)
     httpd.serve_forever()
 
+def get_free_proxies():
+    try:
+        response = requests.get("https://proxyscrape.com", timeout=5)
+        if response.status_code == 200:
+            return response.text.strip().split("\r\n")
+    except:
+        pass
+    return []
+
 def raise_funpay_lots():
     url = "https://funpay.com"
     headers = {
@@ -61,7 +70,7 @@ def raise_funpay_lots():
     data = {"game_id": ""} 
     
     try:
-        response = requests.post(url, headers=headers, data=data, timeout=10)
+        response = requests.post(url, headers=headers, data=data, timeout=8)
         if response.status_code == 200:
             try:
                 json_data = response.json()
@@ -69,11 +78,27 @@ def raise_funpay_lots():
                     return False, f"Ошибка сайта: {json_data.get('message', 'Ограничение времени поднятия')}"
             except:
                 pass
-            return True, "Лоты успешно обработаны на сайте"
-        else:
-            return False, f"Статус код сайта: {response.status_code}"
-    except Exception as e:
-        return False, f"Ошибка соединения: {str(e)}"
+            return True, "Лоты успешно обработаны напрямую"
+    except:
+        pass
+
+    proxy_list = get_free_proxies()
+    for proxy in proxy_list[:15]:
+        proxies = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
+        try:
+            response = requests.post(url, headers=headers, data=data, proxies=proxies, timeout=5)
+            if response.status_code == 200:
+                try:
+                    json_data = response.json()
+                    if "error" in json_data:
+                        return False, f"Ошибка сайта: {json_data.get('message', 'Ограничение времени поднятия')}"
+                except:
+                    pass
+                return True, f"Лоты успешно обработаны через прокси {proxy}"
+        except:
+            continue
+            
+    return False, "Не удалось подключиться к FunPay ни напрямую, ни через бесплатные прокси"
 
 async def funpay_loop():
     global AUTORAISE_ENABLED
