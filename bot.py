@@ -8,13 +8,13 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Токен вашего бота
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
+# СЮДА ВСТАВЬТЕ ВАШ СВЕЖИЙ ТОКЕН ИЗ BOTFATHER (СКОПИРУЙТЕ ЗАНОВО!)
+TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
 
-# Ваши реальные контакты и ссылки
-FUNPAY_URL = "https://funpay.com"
-PAYGAME_URL = "https://paygame.ru"
-REVIEWS_URL = "https://funpay.com"
+# ВАШИ РЕАЛЬНЫЕ ССЫЛКИ ИЗ ЗАПРОСА:
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
+PAYGAME_URL = "https://paygame.ru/users/SAKO1"
+REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
 SUPPORT_URL = "https://t.me"
 
 bot = Bot(token=TOKEN)
@@ -43,7 +43,7 @@ async def start(message: Message):
     await message.answer(
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
         "Мы — профессиональная команда клана **SK¹**. Предоставляем топовые услуги качественного сопровождения и буста в PUBG Mobile.\n\n"
-        "🔒 **Почему выбирают клан SK¹:**\n"
+        "🔒 **Why choose clan SK¹:**\n"
         "• Профессиональные бойцы нашего клана\n"
         "• Быстрое выполнение и гарантия окупаемости\n"
         "• Полная безопасность вашего игрового аккаунта\n"
@@ -71,10 +71,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с упоминанием SK¹ (ЗДЕСЬ ВСЁ ИСПРАВЛЕНО)
+# 3. Карточка товара с выбором сайтов
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1]) # Исправлено: добавлен индекс [1]
+    prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
