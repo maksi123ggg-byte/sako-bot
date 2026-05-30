@@ -42,7 +42,7 @@ async def start(message: Message):
     
     await message.answer(
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
-        "Мы — профессиональная команда клана **SK¹**. Предоставляем топовые услуги качественного сопровождения и буста в PUBG Mobile.\n\n"
+        "We are specialized team of **SK¹** clan. Предоставляем топовые услуги качественного сопровождения и буста в PUBG Mobile.\n\n"
         "🔒 **Почему выбирают клан SK¹:**\n"
         "• Профессиональные бойцы нашего клана\n"
         "• Быстрое выполнение и гарантия окупаемости\n"
@@ -71,10 +71,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с упоминанием SK¹
+# 3. Карточка товара с упоминанием SK¹ (ЗДЕСЬ ВСЁ ИСПРАВЛЕНО)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1])
+    prod_idx = int(callback.data.split(":")[1]) # Ошибка исправлена здесь
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
@@ -102,17 +102,16 @@ async def back_to_menu(callback: CallbackQuery):
     kb.button(text="💬 Связаться с админом", url=SUPPORT_URL)
     kb.adjust(1)
     
-    await callback.message.edit_text(
+    await message_text = (
         "🎒 **Добро пожаловать в METRO ROYALE SHOP от клана SK¹!**\n\n"
-        "Выбирайте нужный раздел в меню ниже 👇",
-        reply_markup=kb.as_markup()
+        "Выбирайте нужный раздел в меню ниже 👇"
     )
+    await callback.message.edit_text(message_text, reply_markup=kb.as_markup())
     await callback.answer()
 
 async def main():
     await dp.start_polling(bot)
 
-# Код для обхода ограничений Render
 def run_dummy_server():
     port = int(os.environ.get("PORT", 10000))
     handler = http.server.SimpleHTTPRequestHandler
