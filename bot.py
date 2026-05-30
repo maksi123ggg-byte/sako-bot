@@ -1,24 +1,27 @@
+import os
 import asyncio
+from threading import Thread
+import http.server
+import socketserver
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Токен в одну сплошную строку без лишних слов
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"
+# Токен и ID администратора
+TOKEN = "8860147716:AAHksZ10JPU4B5TXCjqOaDx_-65341x8wqs"
 ADMIN_ID = 8341066688
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 products = {
-    "7-Я|СОПРОВОД|ГАРАНТ 20КK+ШМОТ": "230 ₽",
-    "7-Я|СОПРОВОД|ГАРАНТ 10КK+ШМОТ": "150 ₽",
-    "7-Я|СОПРОВОД|ГАРАНТ 50КK+ШМОТ": "450 ₽",
-    "5-Я|СОПРОВОД|ГАРАНТ 10КK+ШМОТ": "150 ₽",
-    "5-Я|СОПРОВОД|ГАРАНТ 20КK+ШМОТ": "250 ₽",
-    "7-Я|БУСТ|20КК-БЕЗ ШМОТА": "200 ₽",
-    "7-Я|БУСТ|50КК-БЕЗ ШМОТА": "400 ₽",
+    "60 UC": "99 ₽",
+    "325 UC": "449 ₽",
+    "660 UC": "849 ₽",
+    "1800 UC": "2199 ₽",
+    "3850 UC": "4399 ₽",
+    "8100 UC": "8699 ₽"
 }
 
 user_orders = {}
@@ -33,7 +36,7 @@ async def start(message: Message):
         )
     kb.adjust(1)
     await message.answer(
-        "📱 PUBG METRO SHOP\n\nВыберите пакет услуг:",
+        "📱 PUBG UC SHOP\n\nВыберите пакет UC:",
         reply_markup=kb.as_markup()
     )
 
@@ -42,7 +45,7 @@ async def select_product(callback: CallbackQuery):
     product = callback.data.split(":")[1]
     user_orders[callback.from_user.id] = product
     await callback.message.answer(
-        f"Вы выбрали {product}\n\nОтправьте ваш PUBG ID и ожидайте ответа."
+        f"Вы выбрали {product}\n\nОтправьте ваш PUBG ID."
     )
     await callback.answer()
 
@@ -75,5 +78,17 @@ async def get_pubg_id(message: Message):
 async def main():
     await dp.start_polling(bot)
 
-if name == "main":
+# Специальная функция для Render, имитирующая работу веб-сайта
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    handler = http.server.SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", port), handler) as httpd:
+        httpd.serve_forever()
+
+if __name__ == "__main__":
+    # Запускаем поддельный веб-порт в фоновом потоке, чтобы Render не ругался
+    Thread(target=run_dummy_server, daemon=True).start()
+    
+    # Запускаем самого телеграм-бота
     asyncio.run(main())
+    
