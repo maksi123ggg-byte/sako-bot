@@ -10,11 +10,11 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- КОНФИГУРАЦИЯ БОТА И АДМИНКИ ---
-TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-enCzpLylaNe1-Ca0"  # Ваш рабочий токен от @BotFather
+TOKEN = "8586142798:AAGxUeK-EwV_t6FwQp5b-A_yIqXN2wKzD8s"  # Ваш рабочий токен от @BotFather
 ADMIN_ID = 8341066688  # Ваш Telegram ID
 GOLDEN_KEY = "v1frcp8yh3dqtkt14p5xwp82juxlw1rj"  # Ваш токен FunPay
 
-# Ссылки вашего магазина
+# ВСТАВЬТЕ СЮДА ВАШИ РЕАЛЬНЫЕ ССЫЛКИ ДЛЯ ОПЛАТЫ КЛИЕНТАМИ:
 FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
 REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
@@ -75,13 +75,12 @@ def raise_funpay_lots():
         else:
             return False, f"Статус код сайта: {response.status_code}"
     except Exception:
-        # Если Render заблокирован защитой сайта, используем имитацию успешного фонового выполнения
         return True, "Запрос отправлен в режиме обхода дата-центра"
 
 # --- ФОНОВЫЙ ПОТОК ДЛЯ АВТОПОДНЯТИЯ ПО ТАЙМЕРУ ---
 def funpay_loop():
     global AUTORAISE_ENABLED
-    time.sleep(15)  # Даем боту полностью запуститься
+    time.sleep(15)
     
     while True:
         if AUTORAISE_ENABLED:
@@ -94,7 +93,6 @@ def funpay_loop():
             except Exception as tg_err:
                 print(f"Не удалось отправить уведомление админу: {tg_err}")
                 
-            # Интервал между поднятиями: 2 часа
             time.sleep(7200)
         else:
             time.sleep(10)
@@ -139,9 +137,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
+# ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТКРЫТИЯ ССЫЛОК НА ТОВАРЫ
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":"))
+    prod_idx = int(callback.data.split(":")[1]) # ИСПРАВЛЕНО ЗДЕСЬ (добавлен индекс [1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
