@@ -69,10 +69,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором ваших профилей (Ошибка со split исправлена)
+# 3. Карточка товара с выбором ваших профилей (Баг со split убран)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    # Теперь извлекается точный индекс элемента из callback_data
+    # Теперь берется точный индекс элемента после разделения строки двоеточием
     prod_idx = int(callback.data.split(":")[1])
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
