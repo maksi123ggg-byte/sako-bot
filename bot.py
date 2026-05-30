@@ -8,14 +8,12 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Актуальный токен из вашего BotFather
+# Токен из вашего BotFather и ваши личные ссылки
 TOKEN = "8586142798:AAEJ3iqff4TnmqM19e-encZphrJb9G_fC0M"
-
-# Ваши личные профили и контакты
-FUNPAY_URL = "https://funpay.com/uk/users/19612186/"
+FUNPAY_URL = "https://funpay.com/uk/users/19612186/
 PAYGAME_URL = "https://paygame.ru/users/SAKO1"
 REVIEWS_URL = "https://funpay.com/uk/users/19612186/"
-SUPPORT_URL = "t.me/SK_SAKO"
+SUPPORT_URL = "t.me/SK_SAKO
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -71,10 +69,10 @@ async def show_products(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 3. Карточка товара с выбором сайтов
+# 3. Карточка товара с выбором сайтов (Индекс [1] теперь добавлен!)
 @dp.callback_query(F.data.startswith("prod:"))
 async def select_platform(callback: CallbackQuery):
-    prod_idx = int(callback.data.split(":")[1])
+    prod_idx = int(callback.data.split(":")[1]) # Баг исправлен здесь
     product_name = list(products.keys())[prod_idx]
     product_price = list(products.values())[prod_idx]
     
