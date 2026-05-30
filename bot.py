@@ -261,8 +261,8 @@ async def fp_now(callback: CallbackQuery):
     if success:
         await callback.message.answer(f"[FunPay] Результат выполнения ⚡✅\n{info}")
     else:
-        await callback.message.answer(f"[FunPay]
-        Результат выполнения ❌\n{info}")
+        await callback.message.answer(
+            f"[FunPay]Результат выполнения ❌\n{info}")
 
 async def main():
     asyncio.create_task(funpay_loop())
